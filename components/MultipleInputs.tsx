@@ -67,7 +67,7 @@ interface MultipleInputsProps {
       }
     })
    
-    console.log("cloze_content_array=", cloze_content_array)
+    //console.log("cloze_content_array=", cloze_content_array)
     setInputFields(cloze_content_array as InputItem[] | undefined);
   
 
