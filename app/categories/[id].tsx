@@ -10,7 +10,7 @@ import { Button, SafeAreaView, View } from 'react-native';
 import { sharedStyles } from '@/components/shared_styles';
 import fetchSubCategories from '../../api/fetchSubCategories';
 import { useDomainContext } from '../../components/context/DomainContext';
-import { SubCategoryProps } from '../../components/type';
+import { SubCategoryProps } from '../../components/types';
 
 export default function CategoryScreen() {
   const { id , categoryName} = useLocalSearchParams(); // Extract the dynamic route parameter 'id'

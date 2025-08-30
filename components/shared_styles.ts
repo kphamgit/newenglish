@@ -5,7 +5,8 @@ export const sharedStyles =  StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     backgroundColor: 'green',
-    marginTop: 0,
+   //gap: 10,
+    //paddingTop: 20, // Add some padding at the top
 },
     container: {
       //marginHorizontal: 70,
@@ -20,7 +21,7 @@ export const sharedStyles =  StyleSheet.create({
       backgroundColor: 'lightgreen',
       padding: 10,
       borderRadius: 25,
-      marginVertical: 5,
+     // marginVertical: 5,
       //width: '100%', // Make the button full width
       alignItems: 'center', // Center the text inside the button
       borderWidth: 1,

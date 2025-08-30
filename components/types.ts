@@ -14,6 +14,12 @@ export type QuizAttempFindCreateProps = {
     quiz_attempt: QuizAttemptProps;
 }
 
+export type QuestionAttemptResults = {
+   error_flag: boolean,
+   score: number, 
+   user_answer: string
+}
+
 export type QuestionProps = {
     id: number
     question_number: number,

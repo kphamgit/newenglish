@@ -9,7 +9,7 @@ import React, { useEffect } from 'react';
 import { Button, SafeAreaView, ScrollView, View } from 'react-native';
 import fetchUnits from '../../api/fetchUnits';
 import { useDomainContext } from '../../components/context/DomainContext';
-import { UnitProps } from '../../components/type';
+import { UnitProps } from '../../components/types';
 
 export default function SubCategoryScreen() {
   const { id, subCategoryName} = useLocalSearchParams(); // Extract the dynamic route parameter 'id'
@@ -53,8 +53,10 @@ const { data, isLoading, error } = useQuery({
     });
     router.replace(`/units/${unitId}?${queryParams.toString()}`);
   };
+
   return (
-     <SafeAreaView style={sharedStyles.safe_area_container}>
+    <>
+     
     <Stack.Screen 
         options={{
           title: Array.isArray(subCategoryName) ? subCategoryName[0] : subCategoryName, // Dynamically set the title
@@ -75,11 +77,12 @@ const { data, isLoading, error } = useQuery({
           ),
         }}
       />
-      
-    <ScrollView contentContainerStyle ={sharedStyles.container}>
+      <SafeAreaView style={sharedStyles.safe_area_container}>
+    <ScrollView contentContainerStyle ={{padding: 0,}}>
+      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
        { data &&
          data.map((unit: UnitProps, index: number) => (
-          <View key={index} style={sharedStyles.button}>
+          <View key={index} style={[sharedStyles.button, ]}>
           <Button
             key={index}
             title={unit.name}
@@ -89,44 +92,28 @@ const { data, isLoading, error } = useQuery({
           </View>
        
          ))}
+         </View>
     </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 
+
 /*
-const styles =  StyleSheet.create({
-  safe_area_container: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: 'lightgray'
-  
-},
-    container: {
-        flex: 1,
-        gap: 10,
-        justifyContent: 'center',
-        marginHorizontal: 70,
-      //  alignItems: 'center',
-        backgroundColor: 'lightgray',
-    },
-    linkText: {
-      //color: 'blue', // Change the text color
-      fontSize: 16, // Set the font size
-      //fontWeight: 'bold', // Make the text bold
-      //textDecorationLine: 'underline', // Add underline to indicate it's a link
-    },
-    pressable: {
-      padding: 10,
-      borderRadius: 5,
-      alignItems: 'center',
-      marginVertical: 5,
-      borderWidth: 1,
-      borderColor: 'blue',
-    },
-    pressableText: {
-      color: 'blue',
-      fontWeight: 'bold',
-    },
-});
+ <SafeAreaView style={sharedStyles.safe_area_container}>
+         <ScrollView contentContainerStyle={{
+           padding: 0, // Existing styles
+         }}
+         >
+           {quizzes && quizzes.map((quiz: QuizProps, index: number) => (
+             <View key={index} style={sharedStyles.button}>
+               <Button
+                 title={quiz.name}
+                 onPress={() => findOrCreateQuiz(quiz.id)}
+               />
+             </View>
+           ))}
+         </ScrollView>
+       </SafeAreaView>
 */

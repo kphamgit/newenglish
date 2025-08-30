@@ -1,11 +1,18 @@
 import ButtonSelect from '@/components/ButtonSelect';
+import ClickAndCloze from '@/components/ClickAndCloze';
 import { useDomainContext } from '@/components/context/DomainContext';
 import { useNavigationContext } from '@/components/context/NavigationContext';
 import { useQuestionAttemptContext } from '@/components/context/QuestionAttemptContext';
 import MultipleInputs from '@/components/MultipleInputs';
-import { ChildQuestionRef, QuestionProps } from '@/components/types';
+import MyRecorderNew from '@/components/MyRecorderNew';
+import QuestionAttemptHelper from '@/components/QuestionAttemptHelper';
+import RadioGroup from '@/components/RadioGroup';
+import DuoDragDrop from '@/components/reanimated/duolingo/DuoDragDrop';
+import { ChildQuestionRef, QuestionAttemptResults, QuestionProps } from '@/components/types';
+import WordsSelect from '@/components/WordsSelect';
 import { processQuestion } from '@/utils/processQuestion';
 import { HeaderBackButton } from '@react-navigation/elements';
+import { AudioSource, createAudioPlayer } from 'expo-audio';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Dimensions, Keyboard, KeyboardEvent, StyleSheet, Text, View } from 'react-native';
@@ -42,7 +49,14 @@ export default function QuestionAttemptScreen() {
  const {domain} = useDomainContext(); // Get domain from context
 
  //const [questionFinished, setQuestionFinished] = useState<boolean>(false); // State to track if the question is finished
- const [questionAttemptResults, setQuestionAttemptResults] = useState<any>(null); // State t
+ const [questionAttemptResults, setQuestionAttemptResults] = useState<QuestionAttemptResults>(); // State t
+
+ const endOfQuizAudioSource = require('../../assets/sounds/finish-quiz.mp3'); // Import the audio file
+ const errorAudioSource = require('../../assets/sounds/failure.mp3'); // Import the error audio file
+ const error_player = createAudioPlayer(errorAudioSource as AudioSource); // Create an audio player for the error sound
+  const successAudioSource = require('../../assets/sounds/success.mp3'); // Import the success audio file
+  const success_player = createAudioPlayer(successAudioSource as AudioSource); // Create an audio player for the success
+  const end_of_quiz_player = createAudioPlayer(endOfQuizAudioSource as AudioSource); 
   
 const proceedToNextQuestion = async (finished: boolean) => {
   //console.log("QUESTION FINISHED for opacityImage has finished.");
@@ -59,6 +73,7 @@ const proceedToNextQuestion = async (finished: boolean) => {
     //console.log("XXXXXXX eee Fetched Question Attempt Data:", data);
     if (data.end_of_quiz) {
       //console.log("End of quiz reached");
+      end_of_quiz_player.play(); // Play the end of quiz audio
       setEndOfQuiz(true); // Set endOfQuiz state to true
     }
     //console.log("YYYYYY eee question_attempt:", data?.question_attempt);
@@ -120,14 +135,13 @@ const proceedToNextQuestion = async (finished: boolean) => {
        throw new Error(`HTTP error! status: ${response.status}`);
      }
      else {
-       if (results?.error_flag) {
-        console.log("XXXXXX Error sound should play");
-        // error_player.play(); // Play the error sound
-       }
-       else {
-        console.log("XXXXXX Success sound should play");
-        // success_player.play(); // Play the success sound
-       }
+      //console.log("EEEEE results=", results);
+      if (results?.error_flag) {
+        error_player.play(); // Play the error sound
+      }
+      else {
+        success_player.play(); // Play the success sound
+      }
        setQuestionAttemptResults(results); // Store results in state
      
      }
@@ -163,13 +177,26 @@ const proceedToNextQuestion = async (finished: boolean) => {
     {[{ width: 100, height: 100, resizeMode: 'contain', marginBottom: 5 }, animatedStylesImage]}
   />
        switch (format) {
-       case '1':
-         return <MultipleInputs ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
-       case '3':
-           return <ButtonSelect ref={childQuestionRef} content={content}  enableCheckButton={userFinishedAction} />;
-       default:
-         //console.warn("Unknown question format:", format);
-         return null;
+        case '1':
+          return <MultipleInputs ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
+        case '2':
+          return <ClickAndCloze ref={childQuestionRef} content={content} choices={button_cloze_options || ''} enableCheckButton={userFinishedAction} />;
+        case '3':
+            return <ButtonSelect ref={childQuestionRef} content={content}  enableCheckButton={userFinishedAction} />;
+        case '4':
+          return <RadioGroup ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
+        case '6':
+          return (
+           
+             <DuoDragDrop ref={childQuestionRef} words={content.split('/')} enableCheckButton={userFinishedAction} />
+          )
+        case '7':
+          return <MyRecorderNew ref={childQuestionRef} />
+        case '8':
+          return <WordsSelect ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
+        default:
+          //console.warn("Unknown question format:", format);
+          return null;
      }
    };
  
@@ -300,23 +327,30 @@ const proceedToNextQuestion = async (finished: boolean) => {
                       {memoizedDisplayQuestion}
           </View>
         </Animated.View>
-       
         <Animated.View style={[styles.resultsContainer, animatedStylesResults]}>
-          <Text>Results go here</Text>
-          <Text>{
-                    questionAttemptResults
-                      ? `Score: ${questionAttemptResults.score}, ${questionAttemptResults.error_flag ? 'Sorry' : 'Great Job'}, 
-                      Correct Answer: ${theQuestion?.answer_key}`
-                      : 'Results will be displayed here after checking the answer.'
-                }</Text>
+          <Text>{ 
+            questionAttemptResults?.error_flag ? 'Sorry. The correct answer is: ' + QuestionAttemptHelper.format_answer_key( theQuestion?.answer_key || '', theQuestion?.format, theQuestion?.content || '')
+             : 'Great Job'
+                   
+            }</Text>
         </Animated.View>
-        <View style= {[styles.buttonContainer, { marginBottom: keyboardHeight > 0 ? keyboardHeight : 25 }]}>
+        <View style= {[styles.buttonContainer, { marginBottom: keyboardHeight > 0 ? keyboardHeight : 25 ,}]}>
          {renderButtonRow(theQuestion?.format.toString() || '')} 
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
   );
 }
+
+/*
+(answer_key: string, format: number | undefined, content: string): string | undefined => {
+theQuestion?.answer_key
+ QuestionHelper.format_user_answer(arg.user_answer, arg.answer_key!, 
+  questionAttemptResults
+                      ? `Score: ${questionAttemptResults.score}, ${questionAttemptResults.error_flag ? 'Sorry' : 'Great Job'}, 
+                      Correct Answer: ${theQuestion?.answer_key}`
+                      : 'Results will be displayed here after checking the answer.'
+*/
 
   const styles = StyleSheet.create({
     safe_area_container: {
@@ -331,7 +365,9 @@ const proceedToNextQuestion = async (finished: boolean) => {
       justifyContent: 'center',
     },
     questionContainer: {  
-      flex: 1,
+      flex: 1, // the parent allows the children to expand fully.
+      width: '90%', // allows children take up full screen width
+      
       //position: 'relative',
       //top: 0,
       //left: 0,
@@ -353,7 +389,9 @@ const proceedToNextQuestion = async (finished: boolean) => {
       position: 'absolute',  // meaning it is positioned relative to the viewport (screen)
       left: 0,
       right: 0,
-      bottom: 25,
+      bottom: 20,
+      marginHorizontal: 20,
+      borderRadius: 15,
       //justifyContent: 'center', 
       //alignItems: 'center', 
       backgroundColor: 'red', 

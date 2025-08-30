@@ -10,7 +10,7 @@ import { Button, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native
 import fetchQuizzes from '../../api/fetchQuizzes';
 import { useDomainContext } from '../../components/context/DomainContext';
 import { useQuizAttemptContext } from '../../components/context/QuizAttemptContext';
-import { QuizProps } from '../../components/type';
+import { QuizProps } from '../../components/types';
 
 export default function UnitScreen() {
   //const { id, categoryId, categoryName, subCategoryName} = useLocalSearchParams(); // Extract the dynamic route parameter 'id'
