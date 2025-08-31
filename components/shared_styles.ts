@@ -17,6 +17,15 @@ export const sharedStyles =  StyleSheet.create({
         alignSelf: 'center', // Center the container horizontally
         backgroundColor: 'green',
     },
+    buttonWraper: { 
+      flex: 1, 
+      gap: 10, 
+      justifyContent: 'center', 
+      marginHorizontal: 25, 
+      backgroundColor: 'blue', 
+      marginTop: 10
+    },
+
     button: {
       backgroundColor: 'lightgreen',
       padding: 10,

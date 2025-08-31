@@ -79,7 +79,7 @@ const { data, isLoading, error } = useQuery({
       />
       <SafeAreaView style={sharedStyles.safe_area_container}>
     <ScrollView contentContainerStyle ={{padding: 0,}}>
-      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+      <View style={sharedStyles.buttonWraper}>
        { data &&
          data.map((unit: UnitProps, index: number) => (
           <View key={index} style={[sharedStyles.button, ]}>
@@ -100,20 +100,3 @@ const { data, isLoading, error } = useQuery({
 }
 
 
-/*
- <SafeAreaView style={sharedStyles.safe_area_container}>
-         <ScrollView contentContainerStyle={{
-           padding: 0, // Existing styles
-         }}
-         >
-           {quizzes && quizzes.map((quiz: QuizProps, index: number) => (
-             <View key={index} style={sharedStyles.button}>
-               <Button
-                 title={quiz.name}
-                 onPress={() => findOrCreateQuiz(quiz.id)}
-               />
-             </View>
-           ))}
-         </ScrollView>
-       </SafeAreaView>
-*/

@@ -315,6 +315,9 @@ const proceedToNextQuestion = async (finished: boolean) => {
       <SafeAreaView style={styles.safe_area_container}>
         <Animated.View style={[{ justifyContent: 'space-around', alignItems: 'center', height: '75%', backgroundColor: 'orange' }, animatedStylesImage]}>
            {displayInstruction(theQuestion!) }
+           <View style={{ padding: 10 , marginBottom: 30, backgroundColor: 'lightgreen', borderRadius: 10}}>
+          <Text>{theQuestion?.prompt}</Text>
+          </View>
            <View style={styles.questionContainer}>
                       {memoizedDisplayQuestion}
           </View>

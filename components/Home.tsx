@@ -71,7 +71,7 @@ import { CategoryProps } from "./types";
       />
   <SafeAreaView style={sharedStyles.safe_area_container}>
     <ScrollView contentContainerStyle ={{padding: 0,}}>
-      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+      <View style={sharedStyles.buttonWraper}>
          {data && 
           data.map((category: CategoryProps, index: number) => (
           <View key={index} style={[sharedStyles.button, ]}>
