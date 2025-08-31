@@ -19,6 +19,7 @@ import { Button, Dimensions, Keyboard, KeyboardEvent, StyleSheet, Text, View } f
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import Webview from 'react-native-webview';
 
 export default function QuestionAttemptScreen() {
   
@@ -56,7 +57,8 @@ export default function QuestionAttemptScreen() {
  const error_player = createAudioPlayer(errorAudioSource as AudioSource); // Create an audio player for the error sound
   const successAudioSource = require('../../assets/sounds/success.mp3'); // Import the success audio file
   const success_player = createAudioPlayer(successAudioSource as AudioSource); // Create an audio player for the success
-  const end_of_quiz_player = createAudioPlayer(endOfQuizAudioSource as AudioSource); 
+  const end_of_quiz_player = createAudioPlayer(endOfQuizAudioSource as AudioSource);
+  const [checkButtonDisabled, setCheckButtonDisabled] = useState<boolean>(true); // State to track if the button is disabled
   
 const proceedToNextQuestion = async (finished: boolean) => {
   //console.log("QUESTION FINISHED for opacityImage has finished.");
@@ -109,12 +111,6 @@ const proceedToNextQuestion = async (finished: boolean) => {
 
   
   const handleCheck = async () => {
-    // show Keyboard
-    
-
-    //translateY.value = withTiming(0, { duration: 1000 }); // Animate to its original p
-    // if keyboard is present, dismiss it
-
     Keyboard.dismiss();
     setKeyboardHeight(0); // Reset keyboard height
      opacityResults.value = withTiming(1, { duration: 800 });
@@ -143,10 +139,7 @@ const proceedToNextQuestion = async (finished: boolean) => {
         success_player.play(); // Play the success sound
       }
        setQuestionAttemptResults(results); // Store results in state
-     
      }
-
-
   }
 
   const animatedStylesResults = useAnimatedStyle(() => ({
@@ -158,54 +151,61 @@ const proceedToNextQuestion = async (finished: boolean) => {
     opacity: opacityImage.value,
   }));
 
-  const displayQuestionInstruction = (question: QuestionProps) => {
-    //console.log("displayQuestionInstruction called with question: ", question);
+  
+  const displayInstruction = (question: QuestionProps) => {
     const screenWidth = Dimensions.get('window').width; // Get screen width for responsive rendering
     return (
-      <View style={[{ width: screenWidth * 0.9, padding: 10 }, animatedStylesImage]}>
+      <View style={[{  padding: 10 }]}>
         <RenderHTML
-          contentWidth={screenWidth * 0.9}
-          source={{ html: question.instruction }} // Render the HTML content
+          contentWidth={screenWidth * 0.4}
+          source={{ html: theQuestion?.instruction || '' }} // Render the HTML content
         />
       </View>
     );
   };
 
+  const displayInstructionNew = () => {
+    const screenWidth = Dimensions.get('window').width; // Get screen width for responsive rendering
+    const htmlContent = theQuestion?.instruction
+    return (
+      <Webview
+        originWhitelist={['*']}
+        source={{ html: theQuestion?.instruction || '' }} 
+        style={{ height: 200, width: '100%' }}
+      />
+    );
+  };
+
   const displayQuestion = (format: string, content: string, button_cloze_options: string | undefined) => {
     // console.log("displayQuestion called with format: ", format, " content: ", content, " button_cloze_options: ", button_cloze_options);
-    <Animated.Image source={test_image} style=
-    {[{ width: 100, height: 100, resizeMode: 'contain', marginBottom: 5 }, animatedStylesImage]}
-  />
        switch (format) {
         case '1':
-          return <MultipleInputs ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
+          return <MultipleInputs ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
         case '2':
-          return <ClickAndCloze ref={childQuestionRef} content={content} choices={button_cloze_options || ''} enableCheckButton={userFinishedAction} />;
+          return <ClickAndCloze ref={childQuestionRef} content={content} choices={button_cloze_options || ''} enableCheckButton={userStartedAction} />;
         case '3':
-            return <ButtonSelect ref={childQuestionRef} content={content}  enableCheckButton={userFinishedAction} />;
+            return <ButtonSelect ref={childQuestionRef} content={content}  enableCheckButton={userStartedAction} />;
         case '4':
-          return <RadioGroup ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
+          return <RadioGroup ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
         case '6':
           return (
-           
-             <DuoDragDrop ref={childQuestionRef} words={content.split('/')} enableCheckButton={userFinishedAction} />
+             <DuoDragDrop ref={childQuestionRef} words={content.split('/')} enableCheckButton={userStartedAction} />
           )
         case '7':
           return <MyRecorderNew ref={childQuestionRef} />
         case '8':
-          return <WordsSelect ref={childQuestionRef} content={content} enableCheckButton={userFinishedAction} />;
+          return <WordsSelect ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
         default:
           //console.warn("Unknown question format:", format);
           return null;
      }
    };
  
-   const userFinishedAction = () => {
-    // user finishing an action means the user has completed making all the selections, filling in the blanks, or recording an audio...
-    // and the question is ready for checking
-    //console.log("MMMMMM User userFinishedAction");
+   const userStartedAction = () => {
+    // user started an action means the user has started filling in the blanks, or
+    // select a button, ...recording an audio...
     // enable the Check button in ButtonSection
-    //setCheckButtonDisabled(false); // Enable the Check button
+    setCheckButtonDisabled(false); // Enable the Check button
     //buttonSelectionRef.current?.enableCheckButton(); // This will enable the Check button in ButtonSection
     // ask ButtonSection to show the Check button
   }
@@ -217,7 +217,6 @@ const proceedToNextQuestion = async (finished: boolean) => {
       (event: KeyboardEvent) => {
         console.log("Keyboard shown with height: ", event.endCoordinates.height);
         setKeyboardHeight(event.endCoordinates.height); // Get the keyboard height
-        //setKeyboardVisible(true); // Set keyboard visibility to true
       }
     );
 /*
@@ -250,20 +249,9 @@ const proceedToNextQuestion = async (finished: boolean) => {
           return;
         }
         const questionData = await response.json();
-        //console.log("************** Fetched Question Data:", questionData);
-       // if (questionData.end_of_quiz) {
-        //  setEndOfQuiz(true); // Set endOfQuiz state to true
-       //   return;
-       // } else {
-          //setId(questionData.question_attempt_id); // Ensure question_attempt_id is a string before setting it
           setFormat(questionData.format); // Ensure format is a string before setting it
           setAnswerKey(questionData.answer_key);
           setTheQuestion(questionData); // Set the question data in state
-          if (questionData.format.toString() === '1')
-          {
-            //setJustifyContentValue('center')
-            //setButtonMarginBottom(keyboardHeight > 0 ? keyboardHeight : null);
-          }
       }
     };
     fetchQuestion().catch(console.error);
@@ -283,9 +271,13 @@ const proceedToNextQuestion = async (finished: boolean) => {
       return (
         <>
           {showContinueButton ? (
-            <Button title="Continue" onPress={handleContinue} />
+            <View style={{ backgroundColor: 'green', }}>
+            <Button title="Continue" color='white'  onPress={handleContinue} />
+            </View>
           ) : (
-            <Button title="Check" onPress={handleCheck} />
+            <View style={{ opacity: checkButtonDisabled ? 0.5 : 1 , backgroundColor: checkButtonDisabled ? 'gray' : 'brown', }}>
+            <Button disabled={checkButtonDisabled} title="Check" color='black' onPress={handleCheck} />
+            </View>
           )}
         </>
       );
@@ -302,8 +294,7 @@ const proceedToNextQuestion = async (finished: boolean) => {
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.safe_area_container}>
+    <>
       <Stack.Screen
         options={{
         title: theQuestion ? `Question: ${theQuestion.question_number}` : '',
@@ -320,9 +311,10 @@ const proceedToNextQuestion = async (finished: boolean) => {
         }
         }
       />
-
+      <SafeAreaProvider>
+      <SafeAreaView style={styles.safe_area_container}>
         <Animated.View style={[{ justifyContent: 'space-around', alignItems: 'center', height: '75%', backgroundColor: 'orange' }, animatedStylesImage]}>
-        
+           {displayInstruction(theQuestion!) }
            <View style={styles.questionContainer}>
                       {memoizedDisplayQuestion}
           </View>
@@ -334,11 +326,12 @@ const proceedToNextQuestion = async (finished: boolean) => {
                    
             }</Text>
         </Animated.View>
-        <View style= {[styles.buttonContainer, { marginBottom: keyboardHeight > 0 ? keyboardHeight : 25 ,}]}>
+        <View style= {[styles.buttonContainer, { marginBottom: keyboardHeight > 0 ? keyboardHeight : 25 }]}>
          {renderButtonRow(theQuestion?.format.toString() || '')} 
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
+    </>
   );
 }
 
@@ -394,9 +387,9 @@ theQuestion?.answer_key
       borderRadius: 15,
       //justifyContent: 'center', 
       //alignItems: 'center', 
-      backgroundColor: 'red', 
+      //backgroundColor: 'green', 
       //height: '10%' ,
-      opacity: 1,
+      //opacity: 1,
       zIndex: 0,  // Ensure the button container is above the results container
     },
   });

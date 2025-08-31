@@ -45,22 +45,28 @@ interface MultipleInputsProps {
 
   
   useEffect(() => {
-    const array = content?.split(' ');
+    // split content by spaces or brackets
+    const array = content?.split(/(\[.*?\]|\s+|#)/).filter(item => item.trim() !== '');
+    //console.log(" my_array =", my_array);
+    
     // ["How ", "are", " you? # I'm fine, ", "thank"," you." ]
     //[ "How ","are", " you? ", "<br />", " I'm fine, ","thank", " you." ]
     // Filter out empty strings that might result from consecutive brackets
     //const filteredArray = array?.filter(item => item.trim() !== "");
+    //console.log(" array =", array);
     let input_count = 0;
     let static_text_count = 0;
     const cloze_content_array = array?.map((part, index) => {
+      //console.log(" begin of loop: found input tag =", part)
       if (part.includes('#')) {
         //console.log(" found new line tag =", part)
         return { id: "new_line_" + index.toString(),  type: 'newline_tag', value: part,}
       }
       else if (part.includes('[')) {
-        console.log(" found input tag =", part)
+        //console.log(" found input tag =", part)
         // use regular expression to remove the square brackets
         part = part.replace('[', '').replace(']', '')
+        //console.log(" after removing brackets, input tag =", part)
         const input_id = "input_" + input_count.toString();
         input_count += 1;
         return { id: input_id,  type: 'input', value: part,}

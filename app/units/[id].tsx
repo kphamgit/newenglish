@@ -102,58 +102,44 @@ export default function UnitScreen() {
           ),
         }}
       />
-    <SafeAreaView style={sharedStyles.safe_area_container}>
-    <ScrollView contentContainerStyle={{
-    padding: 0, // Existing styles
-   // paddingBottom: 20, // Add new style
-    //backgroundColor: 'blue', // Example additional style
-    //justifyContent: 'flex-start', // Align items to the top
-  }}
-    >
-       {quizzes && quizzes.map((quiz: QuizProps, index: number) => (
-          <View key={index} style={sharedStyles.button}>
-          <Button
-            title={quiz.name}
-            onPress={() => findOrCreateQuiz(quiz.id)}
-          />
+      <SafeAreaView style={sharedStyles.safe_area_container}>
+     <ScrollView contentContainerStyle ={{padding: 0,}}>
+       <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+         {quizzes && quizzes.map((quiz: QuizProps, index: number) => (
+           <View key={index} style={[sharedStyles.button, ]}>
+           <Button
+             key={index}
+               title={quiz.name}
+                onPress={() => findOrCreateQuiz(quiz.id)}
+           />
+           </View>
+        
+          ))}
           </View>
-      ))}
-  </ScrollView>
-    </SafeAreaView>
+     </ScrollView>
+     </SafeAreaView>
   </>
    
   );
 }
 
 /*
-  <ScrollView contentContainerStyle={styles.scrollViewContent}>
-       {quizzes && quizzes.map((quiz: QuizProps, index: number) => (
-          <View key={index} style={sharedStyles.button}>
-          <Button
-            title={quiz.name}
-            onPress={() => findOrCreateQuiz(quiz.id)}
-          />
-
-
+  <SafeAreaView style={sharedStyles.safe_area_container}>
+     <ScrollView contentContainerStyle ={{padding: 0,}}>
+       <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+         {quizzes && quizzes.map((quiz: QuizProps, index: number) => (
+           <View key={index} style={[sharedStyles.button, ]}>
+           <Button
+             key={index}
+               title={category.name}
+                onPress={() => findOrCreateQuiz(quiz.id)}
+           />
+           </View>
+        
+          ))}
           </View>
-      ))}
-  </ScrollView>
-*/
-/*
- <ScrollView contentContainerStyle ={sharedStyles.container}>
-       { data && data.map((unit: UnitProps, index: number) => (
-          <View key={index} style={sharedStyles.button}>
-
-          <Button
-            key={index}
-            title={unit.name}
-            onPress={() => handleClick(unit.id.toString(), unit.name)}
-          />
-
-          </View>
-       
-         ))}
-    </ScrollView>
+     </ScrollView>
+     </SafeAreaView>
 */
 
 const styles =  StyleSheet.create({

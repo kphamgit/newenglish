@@ -1,11 +1,11 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { SafeAreaView, StyleSheet, View } from "react-native";
-import fetchCategories from "../api/fetchCategories";
 import { router, Stack } from "expo-router";
 import { useEffect } from "react";
-import { Button } from "react-native";
+import { Button, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import fetchCategories from "../api/fetchCategories";
 import { useDomainContext } from "./context/DomainContext";
+import { sharedStyles } from "./shared_styles";
 import { CategoryProps } from "./types";
 
  function Home() {
@@ -59,7 +59,7 @@ import { CategoryProps } from "./types";
 
 
   return (
-    <SafeAreaView style={styles.safe_area_container}>
+    <>
        <Stack.Screen
         
         options={{
@@ -69,26 +69,48 @@ import { CategoryProps } from "./types";
           headerLeft: undefined, // Hide the back button
         }}
       />
-    <View style={styles.container}>
-        {data && 
+  <SafeAreaView style={sharedStyles.safe_area_container}>
+    <ScrollView contentContainerStyle ={{padding: 0,}}>
+      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+         {data && 
           data.map((category: CategoryProps, index: number) => (
-            <View key={index} style={styles.button}>
-            <Button
-              key={index}
+          <View key={index} style={[sharedStyles.button, ]}>
+          <Button
+            key={index}
               title={category.name}
               onPress={() => handleClick(category.id.toString(), category.name)}
-              color="darkblue" // Set the button color
-             
-            />
-             </View>
-          
-          ))
-        }
-    </View>
+          />
+          </View>
+       
+         ))}
+         </View>
+    </ScrollView>
     </SafeAreaView>
+    </>
   )
 
 }
+
+
+/*
+  <SafeAreaView style={sharedStyles.safe_area_container}>
+    <ScrollView contentContainerStyle ={{padding: 0,}}>
+      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+         {data && 
+          data.map((category: CategoryProps, index: number) => (
+          <View key={index} style={[sharedStyles.button, ]}>
+          <Button
+            key={index}
+              title={category.name}
+              onPress={() => handleClick(category.id.toString(), category.name)}
+          />
+          </View>
+       
+         ))}
+         </View>
+    </ScrollView>
+    </SafeAreaView>
+*/
 
 
 //   <DroppedItemsMapExample  onBack={() => console.log("HERE")} />
@@ -122,3 +144,4 @@ export const styles =  StyleSheet.create({
 });
 
 export default Home;
+

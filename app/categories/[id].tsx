@@ -4,8 +4,8 @@ import { useNavigationContext } from '@/components/context/NavigationContext';
 import { HeaderBackButton } from '@react-navigation/elements';
 import { useQuery } from '@tanstack/react-query';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
-import { Button, SafeAreaView, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Button, SafeAreaView, ScrollView, View } from 'react-native';
 //import { Button } from 'react-native-paper';
 import { sharedStyles } from '@/components/shared_styles';
 import fetchSubCategories from '../../api/fetchSubCategories';
@@ -51,7 +51,7 @@ const { data, isLoading, error } = useQuery({
 
   return (
 
-    <SafeAreaView style={sharedStyles.safe_area_container}>
+   <>
       <Stack.Screen
         options={{
           title: catName, // Dynamically set the title
@@ -65,42 +65,49 @@ const { data, isLoading, error } = useQuery({
              ),
         }}
       />
-      <View style={sharedStyles.container}>
-         {data &&
+      <SafeAreaView style={sharedStyles.safe_area_container}>
+    <ScrollView contentContainerStyle ={{padding: 0,}}>
+      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+      {data &&
            data.map((sub_category: SubCategoryProps, index: number) => (
-            <View key={index} style={sharedStyles.button}>
-            <Button
-              key={index}
-              title={sub_category.name}
+          <View key={index} style={[sharedStyles.button, ]}>
+          <Button
+            key={index}
+       title={sub_category.name}
               onPress ={() => handleClick(sub_category.id.toString(), sub_category.name)}
-            />
-             </View>
-           
-           ))}
-      </View>
 
+          />
+          </View>
+       
+         ))}
+         </View>
+    </ScrollView>
     </SafeAreaView>
+    </>
+ 
 
   );
 }
 
 //textColor="white" // Change the text color
 /*
-const styles =  StyleSheet.create({
-  safe_area_container: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: 'lightgray'
-  
-},
-    container: {
-        flex: 1,
-        gap: 10,
-        justifyContent: 'center',
-        marginHorizontal: 70,
+     <SafeAreaView style={sharedStyles.safe_area_container}>
+    <ScrollView contentContainerStyle ={{padding: 0,}}>
+      <View style={{ flex: 1, gap: 10, justifyContent: 'center', marginHorizontal: 25, backgroundColor: 'red', marginTop: 10}}>
+      {data &&
+           data.map((sub_category: SubCategoryProps, index: number) => (
+          <View key={index} style={[sharedStyles.button, ]}>
+          <Button
+            key={index}
+       title={sub_category.name}
+              onPress ={() => handleClick(sub_category.id.toString(), sub_category.name)}
 
-    },
-
-});
+          />
+          </View>
+       
+         ))}
+         </View>
+    </ScrollView>
+    </SafeAreaView>
 
 */
