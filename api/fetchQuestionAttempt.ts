@@ -1,5 +1,5 @@
  
-import { QuestionAttemptProps } from "../components/type";
+import { QuestionAttemptProps } from "../components/types";
  
  const fetchQuestionAttempt = async (domain: string, quiz_attempt_id: string | undefined): Promise<QuestionAttemptProps> => {
     //fetch a question as well as corresponding question attempt. Server will decide which question to fetch

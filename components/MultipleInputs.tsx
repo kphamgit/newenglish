@@ -1,6 +1,6 @@
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { ChildQuestionRef } from './types';
+import { TakeQuestionProps } from './types';
 
 interface InputItem {
   id: string; //
@@ -9,17 +9,17 @@ interface InputItem {
   
 }
 
-interface MultipleInputsProps {
-    content: string | undefined;
-    ref: React.Ref<ChildQuestionRef>;
-    enableCheckButton: () => void; 
-  }
+const default_results = {
+  user_answer: '', 
+  score: 0, 
+  error_flag: true, 
 
- const MultipleInputs: React.FC<MultipleInputsProps> = ({ ref, content, enableCheckButton }) => {
+}
+
+ const MultipleInputs: React.FC<TakeQuestionProps> = ({ ref, content, enableCheckButton }) => {
   const [inputFields, setInputFields] = useState<InputItem[] | undefined >([])
   const [inputValues, setInputValues] = useState<{ [key: string]: string }>({ name: '', city: '' });
  
-  //const [blankWidths, setBlankWidths] = useState<number[]>([]);
   const blankWidthsRef = useRef<number[]>([]);
 
   const longestBlankWidth = useRef<number>(0);
@@ -28,21 +28,60 @@ interface MultipleInputsProps {
 
   const [ready, setReady] = useState(false);
 
- useImperativeHandle(ref, () => ({
-      getAnswer,
+  useImperativeHandle(ref, () => ({
+      checkAnswer,
   }));
 
-  const getAnswer = () => {
-    //console.log("******** ClickAndCloze getAnswer called");
-    //console.log("********* inputValues=", inputValues);
-    // filter inputValues to only include those that are not empty
-    const filteredValues = Object.entries(inputValues)
-      .filter(([key, value]) => value.trim() !== '')
-      .map(([key, value]) => value);
-    //console.log("********* filteredValues=", filteredValues);
-    return filteredValues // Return the answer as a string
-  }
+  const compare_cloze_answers = (user_answer: string, answer_key: string) => {
+    let error = true;
+    const multiple_answers = answer_key.indexOf('*') >= 0;
+    if (multiple_answers) {
+        //console.log(" multiple answers")
+        let possible_answers = answer_key.split('*');
+        //possible_answers.forEach((possible_answer: string) => {
+        for (const possible_answer of possible_answers) {
+            if (user_answer.replace(/\s+/g, '') === possible_answer.replace(/\s+/g, '')) {
+                error = false;
+                break;
+            } 
+        };
+        return error;
+    } 
+       
+    if (user_answer.replace(/\s+/g, '') === answer_key.replace(/\s+/g, '')) {
+        error = false;
+    }
+    return error;
+}
 
+  const checkAnswer = (answer_key: string) => {
+   //console.log("process_button_cloze answer_key = ", answer_key)
+    //console.log("process_button_cloze user_answer = ", user_answer)
+    // split answer_key into an array of strings
+    const user_answer = Object.entries(inputValues)
+    .filter(([key, value]) => value.trim() !== '')
+    .map(([key, value]) => value);
+
+    let answer_key_parts = answer_key.split('/')
+    // iterate through user_answer array and compare with corresponding answer_key_parts
+    let error = false;
+    for (let i = 0; i < user_answer.length; i++) {
+        //console.log("process_words_scramble user_answer[i] = ", user_answer[i])
+        //console.log("process_words_scramble answer_key_parts[i] = ", answer_key_parts[i]);
+        error = compare_cloze_answers(user_answer[i], answer_key_parts[i]);
+    }
+    if (error) {
+        return { ...default_results,
+            user_answer: user_answer.join('/'),
+        }
+    }
+
+    return { ...default_results,
+        user_answer: user_answer.join('/'),
+        score: 5,
+        error_flag: false,  
+    }
+}
   
   useEffect(() => {
     // split content by spaces or brackets
@@ -101,7 +140,7 @@ interface MultipleInputsProps {
 
   const handleInputChange = (id: string, value: any) => {
    //console.log("handleInputChange called with id=", id, "value=", value);
-    enableCheckButton(); // Call the function to enable the Check button
+    enableCheckButton(true); // Call the function to enable the Check button
     setInputValues((prev) => ({ ...prev, [id]: value }));
   };
 

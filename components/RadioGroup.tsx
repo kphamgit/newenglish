@@ -1,29 +1,49 @@
-import React, { useImperativeHandle, useState } from 'react';
+import React, { useImperativeHandle, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { RadioButton } from 'react-native-paper';
-import { ChildQuestionRef } from './types';
+import MyRadioButton, { MyRadioButtonRefProps } from './MyRadioButton';
+import { TakeQuestionProps } from './types';
 
-  type RadioButtonQuestionProps = {
-    //serverChoices: ServerRadioProps; // {"choice_1_text": "one", "choice_2_text": "two", "choice_3_text": "three",  "choice_4_text": "four", "id": 296, "questionId": 5689, "selected": ""}
-    ref?: React.Ref<ChildQuestionRef>;
-    content: string | undefined; // Content of the question, if needed
-    enableCheckButton: () => void; // Function to enable the Check button
-  };
 
-  const RadioGroup: React.FC<RadioButtonQuestionProps> = ({ ref,content, enableCheckButton }) => {
+  const RadioGroup: React.FC<TakeQuestionProps> = ({ ref,content, enableCheckButton }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
 
+  const radioButtonRefs = useRef<MyRadioButtonRefProps[]>([]);
+
   useImperativeHandle(ref, () => ({
-      getAnswer,
+      checkAnswer,
   }));
 
-  const getAnswer = () => {
-    // Return the selected value when requested, defaulting to an empty string if not set
-    return selectedValue ?? "";
+  const checkAnswer = (answer_key: string) => {
+    // disable all checkboxes via the refs
+    //console.log("RadioGroup checkAnswer called");
+    // get the index in the radioButtonRefs array of the answer_key, i.e, choice1 -> index 0
+    const correct_answer_index = parseInt(answer_key.replace('choice', '')) - 1;
+    //console.log("RadioGroup checkAnswer ******* correct_answer_index = ", correct_answer_index);
+    const selected_answer_index = parseInt(selectedValue.replace('choice', '')) - 1;
+    //console.log("RadioGroup checkAnswer ******* selected_answer_index = ", selected_answer_index);
+    
+    // set the correct flag of the correct answer to true
+    if (correct_answer_index >= 0 && correct_answer_index < radioButtonRefs.current.length) {
+      radioButtonRefs.current[correct_answer_index].setCorrectFlag(true);
+    }
+    if (selected_answer_index !== correct_answer_index ) {
+        radioButtonRefs.current[selected_answer_index].setCorrectFlag(false);
+    }
+
+    radioButtonRefs.current.forEach((radiobutton) => {
+      radiobutton.setDisabledFlag(true);
+    })
+    return {user_answer: selectedValue ?? "", 
+      score: (correct_answer_index === correct_answer_index) ? 5 : 0, 
+      error_flag: (selected_answer_index !== correct_answer_index)
+    };
   }
+
   const handleRadioButtonPress = (value: any) => {
+    //console.log("RadioGroup handleRadioButtonPress value = ", value);
     setSelectedValue(value);
-    enableCheckButton(); // Call the function to enable the Check button
+    enableCheckButton(true); // Call the function to enable the Check button
     // You can add your custom logic here based on the selected value
     /*
     switch (value) {
@@ -55,7 +75,16 @@ import { ChildQuestionRef } from './types';
         { content && 
             content.split('/').map((item, index) => (
               <View key={index} style={{backgroundColor: 'orange', marginHorizontal: 2, borderRadius: 5, padding: 2, marginBottom: 5}}>
-                <RadioButton.Item style={{backgroundColor: 'lightgreen', borderRadius: 25}} label={item} value={`choice${index + 1}`} />
+                <MyRadioButton 
+                  label={item} 
+                  id={`choice${index + 1}`} 
+                  ref = {(el) => {
+                    if (el) {
+                      radioButtonRefs.current[index] = el;
+                    }
+                  }}
+                  />
+                  
               </View>
             ))
         }
@@ -68,6 +97,17 @@ import { ChildQuestionRef } from './types';
 
 export default RadioGroup
 
+/*
+export interface MyRadioButtonProps {
+    id: string;
+    label: string;
+    //parent_function: (id: string, value: any, label: string) => void;
+    parent_function: (id: string, value: any, label: string) => void;
+    ref: React.Ref<MyRadioButtonRefProps>;
+ }
+*/
+
+//         <RadioButton.Item style={{backgroundColor: 'lightgreen', borderRadius: 25}} label={item} value={`choice${index + 1}`} />
 /*
   <View style={{backgroundColor: 'orange', marginHorizontal: 10, borderRadius: 5, padding: 5, marginBottom: 5}}>
           <RadioButton.Item label={serverChoices.choice_1_text} value="choice1" />

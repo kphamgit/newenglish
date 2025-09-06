@@ -1,26 +1,23 @@
 import React, { useImperativeHandle, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 //import { RadioButton } from 'react-native-paper';
-import { ChildQuestionRef } from './types';
+import { TakeQuestionProps } from './types';
 
-  type ButtonSelectQuestionProps = {
-    content: string | undefined; // Content of the question, if needed
-    //serverChoices: ServerRadioProps; // {"choice_1_text": "one", "choice_2_text": "two", "choice_3_text": "three",  "choice_4_text": "four", "id": 296, "questionId": 5689, "selected": ""}
-    ref?: React.Ref<ChildQuestionRef>;
-    enableCheckButton: () => void; // Function to enable the Check button
-  };
-
-  const ButtonSelect: React.FC<ButtonSelectQuestionProps> = ({ ref, content, enableCheckButton }) => {
+  const ButtonSelect: React.FC<TakeQuestionProps> = ({ ref, content, enableCheckButton }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [disabledArray, setDisabledArray] = useState<boolean[]>([]); // Array to track disabled state of buttons
 
   useImperativeHandle(ref, () => ({
-      getAnswer,
+      checkAnswer,
   }));
 
-  const getAnswer = () => {
-    // Return the selected value when requested, defaulting to an empty string if not set
-    return selectedValue ?? "";
+
+  const checkAnswer = (answer_key: string) => {
+    // This function is not used in ButtonSelect, but defined to match the interface
+    return {user_answer: selectedValue ?? "",
+      score: (selectedValue === answer_key) ? 5 : 0,
+      error_flag: (selectedValue !== answer_key)
+    };
   }
   const handleButtonPress = (value: any, index: number) => {
     // get the clicked button from the event and disable it
@@ -33,7 +30,7 @@ import { ChildQuestionRef } from './types';
     // set the selected value
     setSelectedValue(value);
 
-    enableCheckButton(); // Call the function to enable the Check button
+    enableCheckButton(true); // Call the function to enable the Check button
     // You can add your custom logic here based on the selected value
     /*
     switch (value) {

@@ -5,7 +5,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { calculateLayout, type Offset } from "./Layout";
 import Lines from "./Lines";
 //import Placeholder from "./Placeholder";
-import { ChildQuestionRef } from "@/components/type";
+import { ChildQuestionRef } from "@/components/types";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Placeholder from "./Placeholder";
 import SortableWord from "./SortableWord";
@@ -54,7 +54,7 @@ export interface DuoDragDropProps {
   onReady?: (ready: boolean) => void;
   /** Called when a user taps or drags a word to its destination */
   onDrop?: OnDropFunction;
-  enableCheckButton: () => void; //
+  enableCheckButton: (value: boolean) => void; //
 }
 
 const DuoDragDrop= React.forwardRef<ChildQuestionRef, DuoDragDropProps>((props, ref) => {
@@ -102,7 +102,9 @@ const DuoDragDrop= React.forwardRef<ChildQuestionRef, DuoDragDropProps>((props, 
   }));
 
   useImperativeHandle(ref, () => ({
-    getAnswer: () => {
+   
+    checkAnswer: (answer_key: string) => {
+
       const answeredWords = [];
       for (let i = 0; i < offsets.length; i++) {
         const offset = offsets[i];
@@ -113,8 +115,13 @@ const DuoDragDrop= React.forwardRef<ChildQuestionRef, DuoDragDropProps>((props, 
       }
       const answer_array = answeredWords.sort((a, b) => a.order - b.order).map((w) => w.word);
       // Sort by the order, and return the words in an ordered array
-      return answer_array
+       //console.log("******** ClickAndCloze checkAnswer called, answer_key=**", answer_key, " user answer = **", answer_arr.current.join('/'));
+     return {user_answer: answer_array.join('/'),
+      score: (answer_array.join('/') === answer_key) ? 5 : 0,
+      error_flag: (answer_array.join('/') !== answer_key)
+    };
     },
+
   }));
 
   const initialized = layout && containerWidth > 0;
@@ -171,7 +178,7 @@ const DuoDragDrop= React.forwardRef<ChildQuestionRef, DuoDragDropProps>((props, 
   const LinesComponent = renderLines || Lines;
 
   const enable_checkButton = () => {
-    enableCheckButton(); // Call the parent function to enable the Check button
+    enableCheckButton(true); // Call the parent function to enable the Check button
    // enableCheckButton(); // Call the parent function (question_attempt) to enable the Check button  
   }
   return (

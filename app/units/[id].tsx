@@ -60,6 +60,7 @@ export default function UnitScreen() {
         // use fetch to find or create a quiz attempt
         //console.log("Unit: findOrCreateQuiz");
         const url = `${domain}/api/quiz_attempts/find_create/${quiz_id}/${user_id}`;
+        console.log(" Unit: findOrCreateQuiz, url: ", url);
         fetch(url)
           .then(response => response.json())
           .then( data => {

@@ -1,15 +1,15 @@
 import React, { useImperativeHandle, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChildQuestionRef } from './types';
+import { TakeQuestionProps } from './types';
 
-interface WordsSelectProps {
-    content: string | undefined;
-    ref?: React.Ref<ChildQuestionRef>;
-    enableCheckButton: () => void; 
-  }
+const default_results = {
+  user_answer: '', 
+  score: 0, 
+  error_flag: true, 
 
-const WordsSelect: React.FC<WordsSelectProps> = ({ ref, content, enableCheckButton }) => {
-//export default function WordsSelect() {
+}
+
+const WordsSelect: React.FC<TakeQuestionProps> = ({ ref, content, enableCheckButton }) => {
   
   const words = content?.split(" ");
 
@@ -17,7 +17,7 @@ const WordsSelect: React.FC<WordsSelectProps> = ({ ref, content, enableCheckButt
   const [activeWords, setActiveWords] = useState<string[]>([]);
 
   const toggleWord = (word: string) => {
-    enableCheckButton(); // Call the function to enable the Check button
+    enableCheckButton(true); // Call the function to enable the Check button
     // remove punctuation marks such as . , ? ! from the word and save word without punctuation
     setActiveWords((prev) =>
       prev.includes(word)
@@ -27,16 +27,37 @@ const WordsSelect: React.FC<WordsSelectProps> = ({ ref, content, enableCheckButt
   };
 
 useImperativeHandle(ref, () => ({
-      getAnswer,
+      checkAnswer,
   }));
 
-  const getAnswer = () => {
-    //console.log("******** ClickAndCloze getAnswer called");
-    // go through activeWords and remove punctuation marks such as . , ? ! from the word
-    const cleanedWords = activeWords.map(word => word.replace(/[.,?!]/g, '')); // Remove punctuation
-    return cleanedWords; // Return the answer as a string
-  }
-
+  const checkAnswer = (answer_key: string) => {
+     // split answer_key into an array of strings
+     const user_answer = activeWords.map(word => word.replace(/[.,?!]/g, '')); // Remove punctuation
+    
+     let answer_key_parts = answer_key.split('/')
+   
+     // iterate through user_answer array and compare with corresponding answer_key_parts
+     let error = false;
+     for (let i = 0; i < user_answer.length; i++) {
+         //console.log("process_words_scramble user_answer[i] = ", user_answer[i])
+         //console.log("process_words_scramble answer_key_parts[i] = ", answer_key_parts[i]);
+         if (user_answer[i] !== answer_key_parts[i]) {
+             error = true;
+             break;
+         }
+     }
+     if (error) {
+         return { ...default_results,
+             user_answer: user_answer.join('/'),
+         }
+     }
+ 
+     return { ...default_results,
+         user_answer: user_answer.join('/'),
+         score: 5,
+         error_flag: false,  
+     }
+    }
 
   return (
     <View style={styles.container}>

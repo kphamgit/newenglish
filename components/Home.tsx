@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { router, Stack } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Button, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import fetchCategories from "../api/fetchCategories";
 import { useDomainContext } from "./context/DomainContext";
@@ -20,8 +20,8 @@ import { CategoryProps } from "./types";
      
     }
     else if (process.env.NODE_ENV === "development") {
-       //domain = 'http://localhost:5001';
-       domain = 'https://kphamenglish-f26e8b4d6e4b.herokuapp.com'; //for local development on physical iphone,
+       domain = 'http://localhost:5001';
+       //domain = 'https://kphamenglish-f26e8b4d6e4b.herokuapp.com'; //for local development on physical iphone,
        // http://localhost:5001 doesn't work. 
       // set domain in context for other components to use
        //setDomain(domain);

@@ -1,4 +1,5 @@
 import ButtonSelect from '@/components/ButtonSelect';
+import CheckboxGroup from '@/components/CheckBoxGroup';
 import ClickAndCloze from '@/components/ClickAndCloze';
 import { useDomainContext } from '@/components/context/DomainContext';
 import { useNavigationContext } from '@/components/context/NavigationContext';
@@ -10,7 +11,6 @@ import RadioGroup from '@/components/RadioGroup';
 import DuoDragDrop from '@/components/reanimated/duolingo/DuoDragDrop';
 import { ChildQuestionRef, QuestionAttemptResults, QuestionProps } from '@/components/types';
 import WordsSelect from '@/components/WordsSelect';
-import { processQuestion } from '@/utils/processQuestion';
 import { HeaderBackButton } from '@react-navigation/elements';
 import { AudioSource, createAudioPlayer } from 'expo-audio';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -26,7 +26,7 @@ export default function QuestionAttemptScreen() {
   const opacityImage = useSharedValue<number>(1);
   const opacityResults = useSharedValue<number>(0);
 
-  const test_image = require('../../assets/images/dragdrop/carpet.png');
+  //const test_image = require('../../assets/images/dragdrop/carpet.png');
 
   const [showContinueButton, setShowContinueButton] = React.useState<boolean>(false);
 
@@ -59,7 +59,7 @@ export default function QuestionAttemptScreen() {
   const success_player = createAudioPlayer(successAudioSource as AudioSource); // Create an audio player for the success
   const end_of_quiz_player = createAudioPlayer(endOfQuizAudioSource as AudioSource);
   const [checkButtonDisabled, setCheckButtonDisabled] = useState<boolean>(true); // State to track if the button is disabled
-  
+
 const proceedToNextQuestion = async (finished: boolean) => {
   //console.log("QUESTION FINISHED for opacityImage has finished.");
   // Perform any additional actions here
@@ -111,20 +111,22 @@ const proceedToNextQuestion = async (finished: boolean) => {
 
   
   const handleCheck = async () => {
+  
     Keyboard.dismiss();
     setKeyboardHeight(0); // Reset keyboard height
      opacityResults.value = withTiming(1, { duration: 800 });
      setShowContinueButton(true);
 
-     const user_answer = childQuestionRef.current?.getAnswer(); // Get the answer from the child component
-     const results = processQuestion(theQuestion?.format.toString(), theQuestion?.answer_key, user_answer );
+     //const user_answer = childQuestionRef.current?.getAnswer(); // Get the answer from the child component
+     //const results = processQuestion(theQuestion?.format.toString(), theQuestion?.answer_key, user_answer );
+     const results  = childQuestionRef.current?.checkAnswer(theQuestion?.answer_key || '');
      const url = `${domain}/api/question_attempts/${id}/update`;
      const response = await fetch(url, {
        method: "POST",
        headers: {
          "Content-Type": "application/json",
        },
-       body: JSON.stringify({  score: results?.score, error_flag: results?.error_flag, user_answer: results?.user_answer }),
+       body: JSON.stringify(results),
      });
  
      if (!response.ok) {
@@ -140,6 +142,22 @@ const proceedToNextQuestion = async (finished: boolean) => {
       }
        setQuestionAttemptResults(results); // Store results in state
      }
+      if (theQuestion?.format === 4) {
+        console.log("RadioGroup format 4 checkAnswer called");
+        if (childQuestionRef.current) {
+          if (childQuestionRef.current?.checkAnswer) {
+            childQuestionRef.current.checkAnswer(theQuestion.answer_key || '');
+          }
+        }
+      }
+      else if (theQuestion?.format === 5) {
+      
+        if (childQuestionRef.current) {
+          if (childQuestionRef.current?.checkAnswer) {
+            childQuestionRef.current.checkAnswer(theQuestion.answer_key || '');
+          }
+        }
+      }
   }
 
   const animatedStylesResults = useAnimatedStyle(() => ({
@@ -176,36 +194,39 @@ const proceedToNextQuestion = async (finished: boolean) => {
     );
   };
 
+  //  return <RadioGroup ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
   const displayQuestion = (format: string, content: string, button_cloze_options: string | undefined) => {
     // console.log("displayQuestion called with format: ", format, " content: ", content, " button_cloze_options: ", button_cloze_options);
        switch (format) {
         case '1':
-          return <MultipleInputs ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
+          return <MultipleInputs ref={childQuestionRef} content={content} enableCheckButton={setCheckButton} />;
         case '2':
-          return <ClickAndCloze ref={childQuestionRef} content={content} choices={button_cloze_options || ''} enableCheckButton={userStartedAction} />;
+          return <ClickAndCloze ref={childQuestionRef} content={content} choices={button_cloze_options || ''} enableCheckButton={setCheckButton} />;
         case '3':
-            return <ButtonSelect ref={childQuestionRef} content={content}  enableCheckButton={userStartedAction} />;
+            return <ButtonSelect ref={childQuestionRef} content={content}  enableCheckButton={setCheckButton} />;
         case '4':
-          return <RadioGroup ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
+            return <RadioGroup ref={childQuestionRef} content={content} enableCheckButton={setCheckButton} />;
+        case '5':
+            return <CheckboxGroup ref={childQuestionRef} content={content} enableCheckButton={setCheckButton} />;
         case '6':
-          return (
-             <DuoDragDrop ref={childQuestionRef} words={content.split('/')} enableCheckButton={userStartedAction} />
-          )
+            return (
+             <DuoDragDrop ref={childQuestionRef} words={content.split('/')} enableCheckButton={setCheckButton} />
+            )
         case '7':
           return <MyRecorderNew ref={childQuestionRef} />
         case '8':
-          return <WordsSelect ref={childQuestionRef} content={content} enableCheckButton={userStartedAction} />;
+          return <WordsSelect ref={childQuestionRef} content={content} enableCheckButton={setCheckButton} />;
         default:
           //console.warn("Unknown question format:", format);
           return null;
      }
    };
  
-   const userStartedAction = () => {
+   const setCheckButton = (value: boolean) => {
     // user started an action means the user has started filling in the blanks, or
     // select a button, ...recording an audio...
     // enable the Check button in ButtonSection
-    setCheckButtonDisabled(false); // Enable the Check button
+    setCheckButtonDisabled(!value); // Enable the Check button
     //buttonSelectionRef.current?.enableCheckButton(); // This will enable the Check button in ButtonSection
     // ask ButtonSection to show the Check button
   }
@@ -215,7 +236,7 @@ const proceedToNextQuestion = async (finished: boolean) => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       (event: KeyboardEvent) => {
-        console.log("Keyboard shown with height: ", event.endCoordinates.height);
+        //console.log("Keyboard shown with height: ", event.endCoordinates.height);
         setKeyboardHeight(event.endCoordinates.height); // Get the keyboard height
       }
     );
@@ -249,6 +270,21 @@ const proceedToNextQuestion = async (finished: boolean) => {
           return;
         }
         const questionData = await response.json();
+        //test
+        const mdata = [
+          { id: 1, name: 'Alice', age: 30 },
+          { id: 2, name: 'Bob', age: 24 },
+          { id: 3, name: 'Charlie', age: 35 }
+        ];
+        const jsonstring =  JSON.stringify(mdata);
+        console.log("jsonstring=", jsonstring, "typeof jsonstring=", typeof jsonstring);
+        // convert jsonstring back to an array of objects
+        const parsedData = JSON.parse(jsonstring);
+        console.log("parsedData=", parsedData);
+        const str: string = "1";
+        console.log("str=", str, typeof str);
+
+        // end test
           setFormat(questionData.format); // Ensure format is a string before setting it
           setAnswerKey(questionData.answer_key);
           setTheQuestion(questionData); // Set the question data in state
@@ -324,7 +360,9 @@ const proceedToNextQuestion = async (finished: boolean) => {
         </Animated.View>
         <Animated.View style={[styles.resultsContainer, animatedStylesResults]}>
           <Text>{ 
-            questionAttemptResults?.error_flag ? 'Sorry. The correct answer is: ' + QuestionAttemptHelper.format_answer_key( theQuestion?.answer_key || '', theQuestion?.format, theQuestion?.content || '')
+            questionAttemptResults?.error_flag 
+            ? 
+            'Sorry. The correct answer is: ' + QuestionAttemptHelper.format_answer_key( theQuestion?.answer_key || '', theQuestion?.format, theQuestion?.content || '')
              : 'Great Job'
                    
             }</Text>

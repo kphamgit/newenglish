@@ -33,6 +33,11 @@ class QuestionAttemptHelper {
                 )
                 //return content.replace(/\[|\]/g, "")
             }
+            else if (format === 4 ) {
+                    //console.log("format = ", format)
+                return content
+               
+            }
             else if (format === 10) {     // 10= dropdown, 2= button cloze -select
                 const replacements: DynamicObject = {};
                 const answer_parts = answer_key.split('/')
@@ -87,7 +92,7 @@ class QuestionAttemptHelper {
 
     format_answer_key = (answer_key: string, format: number | undefined, content: string): string | undefined => {
         if (answer_key) {
-            //console.log("YYYYY format_answer_key ansswer key = ", answer_key, "format = ", format)
+            console.log("YYYYY format_answer_key ansswer key = ", answer_key, "format = ", format)
             if (format === 1 || format === 2) {  //cloze
                 //console.log("format_answer_key format = ", format)
                 const replacements: DynamicObject = {};
@@ -133,6 +138,44 @@ class QuestionAttemptHelper {
               return newStr1
               
                 //return content.replace(/\[|\]/g, "")
+            }
+            else if (format === 4 ) {  // radio
+                // look for the text corresponding to the answer key in the content
+                console.log("content = ", content)
+                // extract the index from the answer key, e.g. if answer key is "choice2", extract 2
+                // index is the last character of the answer key
+                const index = parseInt(answer_key.charAt(answer_key.length - 1)) - 1
+                console.log("index = ", index)
+
+                const content_parts = content.split('/')
+                console.log("content_parts = ", content_parts)
+                if (index >= 0 && index < content_parts.length) {
+                    console.log("found content part = ", content_parts[index])
+                    return content_parts[index]
+                }
+                else {
+                    return 'Invalid answer key index'
+                }
+                //console.log("format = ", format)
+                //return answer_key
+            }
+            else if (format === 5 ) {  // checkbox
+                console.log("foramt = 5 answer key = ",answer_key)
+                // answer key = 'choice1/choice3'
+                const indices_of_answer_keys = answer_key.split('/').map((key) => parseInt(key.charAt(key.length - 1)) - 1)
+                console.log("indices_of_answer_keys = ", indices_of_answer_keys)
+                const content_parts = content.split('/')
+                console.log("content_parts = ", content_parts)
+                const selected_content_parts = indices_of_answer_keys.map((index) => {
+                    if (index >= 0 && index < content_parts.length) {
+                        return content_parts[index]
+                    }
+                    else {
+                        return 'Invalid answer key index'
+                    }
+                })
+                console.log("selected_content_parts = ", selected_content_parts)
+                return selected_content_parts.join('/')
             }
             else if (format === 6) {  //word scramble
                 const answer_parts: string[] = answer_key.split('/')

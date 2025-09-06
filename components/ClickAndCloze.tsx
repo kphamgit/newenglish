@@ -8,7 +8,6 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import { ChildQuestionRef } from './type';
 //import { useAnswerRefContext } from './context/AnswerRefContext';
 
 
@@ -28,12 +27,11 @@ interface InputItem {
   id: string; // Optional for text items
 }
 
-interface ClickAndClozeProps {
-    content: string | undefined;
-    choices: string;
-    enableCheckButton: () => void; // Optional parent function to call
-    ref?: React.Ref<ChildQuestionRef>;
-  }
+import { TakeQuestionProps } from './types';
+
+interface ClickAndClozeProps extends TakeQuestionProps {
+  choices: string;
+}
 
  const ClickAndCloze: React.FC<ClickAndClozeProps> = ({ ref, content, choices, enableCheckButton }) => {
  
@@ -80,15 +78,18 @@ interface ClickAndClozeProps {
     })
 
   useImperativeHandle(ref, () => ({
-      getAnswer,
+      checkAnswer,
   }));
 
-  const getAnswer = () => {
-    //console.log("******** ClickAndCloze getAnswer user answer = ", answer_arr.current);
-    //setInputFields(undefined)
-    return answer_arr.current; // Return the answer as a string
-  }
 
+  const checkAnswer = (answer_key: string) => {
+    // This function is not used in ClickAndCloze, but defined to match the interface
+    //console.log("******** ClickAndCloze checkAnswer called, answer_key=**", answer_key, " user answer = **", answer_arr.current.join('/'));
+    return {user_answer: answer_arr.current.join('/'),
+      score: (answer_arr.current.join('/') === answer_key) ? 5 : 0,
+      error_flag: (answer_arr.current.join('/') !== answer_key)
+    };
+  }
   
   
 
@@ -243,7 +244,7 @@ interface ClickAndClozeProps {
         const dropBoxesAvailable = availableDropBoxes.current.some((available) => available === true);
         if( !dropBoxesAvailable) {
           // No available drop boxes left. This mean the user's finished dropping. Send message to parent component (question_attempt) so that it can enable Check button.");
-          enableCheckButton();
+          enableCheckButton(true);
           //return; // No available drop box found
         }
        // nextAvailableDropBoxIndex.current = availableDropBoxes.current.findIndex((available) => available === true);

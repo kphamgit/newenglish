@@ -20,6 +20,12 @@ export type QuestionAttemptResults = {
    user_answer: string
 }
 
+export interface TakeQuestionProps  {
+  ref?: React.Ref<ChildQuestionRef>;
+  content: string | undefined; // Content of the question, if needed
+  enableCheckButton: (value: boolean) => void; // Function to enable the Check button
+};
+
 export type QuestionProps = {
     id: number
     question_number: number,
@@ -111,10 +117,16 @@ export interface SubCategoryProps {
     categoryId: number
   }
 
+  export type RadioCheckboxAnswerProps = {
+    id: string // id of the choice, e.g., "choice_1"
+    label: string // text of the choice, e.g., "Option A"
+    //isSelected: boolean // whether the choice is selected
+  }
+
   export interface ChildQuestionRef {
     // answer can be a string (ButtonSelect)
     // or an array of strings (WordScramble, WordsSelect, ClickAndCloze)
-    getAnswer: () => string | string[] | undefined;
+    checkAnswer : (answer_key: string) => QuestionAttemptResults;
   }
 
 
